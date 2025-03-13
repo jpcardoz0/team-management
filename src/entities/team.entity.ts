@@ -1,4 +1,5 @@
 import { Column, Entity, PrimaryGeneratedColumn, Unique } from 'typeorm';
+import { getTodayDate } from 'src/utils/dateFunctions';
 
 @Entity()
 @Unique(['name'])
@@ -16,6 +17,6 @@ export class Team {
   @Column()
   location: string;
 
-  @Column()
+  @Column({ default: getTodayDate() })
   foundationDate: string;
 }
