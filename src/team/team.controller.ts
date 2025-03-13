@@ -13,7 +13,7 @@ import {
 
 import { TeamService } from './team.service';
 import { CreateTeamDto } from './dto/CreateTeam.dto';
-import { updateTeamDto } from './dto/UpdateTeam.dto';
+import { UpdateTeamDto } from './dto/UpdateTeam.dto';
 
 @Controller('teams')
 export class TeamController {
@@ -39,7 +39,7 @@ export class TeamController {
   @UsePipes(new ValidationPipe())
   updateTeam(
     @Param('teamId', ParseIntPipe) teamId: number,
-    @Body() updateTeamDto: updateTeamDto,
+    @Body() updateTeamDto: UpdateTeamDto,
   ) {
     return this.teamService.updateTeam(teamId, updateTeamDto);
   }

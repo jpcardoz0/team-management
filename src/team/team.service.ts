@@ -8,7 +8,7 @@ import { Repository } from 'typeorm';
 
 import { Team } from 'src/entities/team.entity';
 import { CreateTeamDto } from './dto/CreateTeam.dto';
-import { updateTeamDto } from './dto/UpdateTeam.dto';
+import { UpdateTeamDto } from './dto/UpdateTeam.dto';
 import { validateDate } from 'src/utils/dateFunctions';
 
 @Injectable()
@@ -17,12 +17,12 @@ export class TeamService {
     @InjectRepository(Team) private teamRepository: Repository<Team>,
   ) {}
 
-  async getAllTeams() {
+  async getAllTeams(): Promise<Team[]> {
     const teams = await this.teamRepository.find();
     return teams;
   }
 
-  async getTeam(teamId: number) {
+  async getTeam(teamId: number): Promise<Team[]> {
     const team = await this.teamRepository.findBy({ id: teamId });
     return team;
   }
@@ -45,10 +45,11 @@ export class TeamService {
 
   async updateTeam(
     teamId: number,
-    updateTeamDto: updateTeamDto,
+    updateTeamDto: UpdateTeamDto,
   ): Promise<Team> {
     await this.teamRepository.update(teamId, updateTeamDto);
     const team = await this.teamRepository.findOne({ where: { id: teamId } });
+
     if (!team) {
       throw new NotFoundException('Time não encontrado.');
     }
