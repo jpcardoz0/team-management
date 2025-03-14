@@ -13,6 +13,8 @@ import {
 
 import { PlayerService } from './player.service';
 import { CreatePlayerDto } from './dto/CreatePlayer.dto';
+import { UpdatePlayerDto } from './dto/UpdatePlayer.dto';
+import { Player } from 'src/entities/player.entity';
 
 @Controller('players')
 export class PlayerController {
@@ -29,14 +31,28 @@ export class PlayerController {
     return this.playerService.getPlayer(playerId);
   }
 
+  @Get('teams/:teamId')
+  @UsePipes(new ValidationPipe())
+  getPlayerByTeamId(@Param('teamId', ParseIntPipe) teamId: number) {
+    return this.playerService.getPlayerByTeamId(teamId);
+  }
+
   @Post()
-  createPlayer(@Body() createPlayerDto: CreatePlayerDto) {
+  createPlayer(@Body() createPlayerDto: CreatePlayerDto): Promise<Player> {
     return this.playerService.createPlayer(createPlayerDto);
   }
 
-  @Put(':pĺayerId')
-  updatePlayer() {}
+  @Put(':playerId')
+  @UsePipes(new ValidationPipe())
+  updatePlayer(
+    @Param('playerId', ParseIntPipe) playerId: number,
+    @Body() updatePlayerDto: UpdatePlayerDto,
+  ) {
+    return this.playerService.updatePlayer(playerId, updatePlayerDto);
+  }
 
   @Delete(':playerId')
-  deletePlayer() {}
+  deletePlayer(@Param('playerId', ParseIntPipe) playerId: number) {
+    return this.playerService.deletePlayer(playerId);
+  }
 }

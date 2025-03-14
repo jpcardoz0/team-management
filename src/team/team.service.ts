@@ -18,12 +18,15 @@ export class TeamService {
   ) {}
 
   async getAllTeams(): Promise<Team[]> {
-    const teams = await this.teamRepository.find();
+    const teams = await this.teamRepository.find({ relations: ['player'] });
     return teams;
   }
 
   async getTeam(teamId: number): Promise<Team[]> {
-    const team = await this.teamRepository.findBy({ id: teamId });
+    const team = await this.teamRepository.find({
+      where: { id: teamId },
+      relations: ['players'],
+    });
     return team;
   }
 

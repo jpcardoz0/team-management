@@ -1,4 +1,4 @@
-import { IsNotEmpty, IsString } from 'class-validator';
+import { IsInt, IsNotEmpty, IsOptional, IsString } from 'class-validator';
 
 export class CreatePlayerDto {
   @IsString()
@@ -10,8 +10,16 @@ export class CreatePlayerDto {
   nationality: string;
 
   @IsString()
+  @IsNotEmpty({ message: 'A posição do jogador deve ser informada.' })
+  position: string;
+
+  @IsString()
   @IsNotEmpty({
     message: 'A data de nascimento do jogador deve ser informada.',
   })
   dob: string;
+
+  @IsInt()
+  @IsOptional()
+  teamId: number;
 }
