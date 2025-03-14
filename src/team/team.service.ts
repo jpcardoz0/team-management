@@ -22,11 +22,16 @@ export class TeamService {
     return teams;
   }
 
-  async getTeam(teamId: number): Promise<Team[]> {
-    const team = await this.teamRepository.find({
+  async getTeam(teamId: number): Promise<Team> {
+    const team = await this.teamRepository.findOne({
       where: { id: teamId },
-      relations: ['players'],
+      relations: ['player'],
     });
+
+    if (!team) {
+      throw new NotFoundException('Time não encontrado.');
+    }
+
     return team;
   }
 
@@ -53,13 +58,21 @@ export class TeamService {
     await this.teamRepository.update(teamId, updateTeamDto);
     const team = await this.teamRepository.findOne({ where: { id: teamId } });
 
+    if (!validateDate(updateTeamDto.foundationDate)) {
+      throw new BadRequestException('A data informada é inválida.');
+    }
+
     if (!team) {
       throw new NotFoundException('Time não encontrado.');
     }
     return team;
   }
 
-  async deleteTeam(teamId: number): Promise<void> {
+  async deleteTeam(teamId: number) {
     await this.teamRepository.delete(teamId);
+
+    return {
+      message: `Time com id ${teamId} deletado com sucesso.`,
+    };
   }
 }

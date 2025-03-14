@@ -1,4 +1,8 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import {
+  BadRequestException,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 
@@ -6,6 +10,7 @@ import { Team } from 'src/entities/team.entity';
 import { Player } from 'src/entities/player.entity';
 import { CreatePlayerDto } from './dto/CreatePlayer.dto';
 import { UpdatePlayerDto } from './dto/UpdatePlayer.dto';
+import { validateDate } from 'src/utils/dateFunctions';
 
 @Injectable()
 export class PlayerService {
@@ -19,8 +24,8 @@ export class PlayerService {
     return players;
   }
 
-  async getPlayer(playerId: number): Promise<Player[]> {
-    const player = await this.playerRepository.findBy({ id: playerId });
+  async getPlayer(playerId: number): Promise<Player> {
+    const player = await this.playerRepository.findOneBy({ id: playerId });
 
     if (!player) {
       throw new NotFoundException('Jogador não encontrado.');
@@ -29,19 +34,23 @@ export class PlayerService {
     return player;
   }
 
-  async getPlayerByTeamId(teamId: number): Promise<Player[]> {
+  async getPlayerByTeamId(teamId: number): Promise<Player> {
     const team = await this.teamRepository.findOneBy({ id: teamId });
 
     if (!team) {
       throw new NotFoundException('Time não encontrado.');
     }
 
-    const players = await this.playerRepository.find({
+    const players = await this.playerRepository.findOne({
       where: {
         team: { id: teamId },
       },
       relations: ['team'],
     });
+
+    if (!players) {
+      throw new Error('Jogador não encontrado');
+    }
 
     return players;
   }
@@ -52,6 +61,10 @@ export class PlayerService {
         id: createPlayerDto.teamId,
       },
     });
+
+    if (!validateDate(createPlayerDto.dob)) {
+      throw new BadRequestException('A data informada é inválida.');
+    }
 
     if (!playerTeam) {
       throw new NotFoundException('Time não encontrado.');
@@ -72,18 +85,42 @@ export class PlayerService {
   async updatePlayer(
     playerId: number,
     updatePlayerDto: UpdatePlayerDto,
-  ): Promise<Player[]> {
-    await this.playerRepository.update(playerId, updatePlayerDto);
+  ): Promise<Player> {
+    const player = await this.playerRepository.findOneBy({ id: playerId });
 
-    const player = await this.playerRepository.findBy({ id: playerId });
+    if (!validateDate(updatePlayerDto.dob)) {
+      throw new BadRequestException('A data informada é inválida.');
+    }
+
     if (!player) {
       throw new NotFoundException('Jogador não encontrado.');
     }
 
+    if (updatePlayerDto.teamId) {
+      const newTeam = await this.teamRepository.findOneBy({
+        id: updatePlayerDto.teamId,
+      });
+
+      if (!newTeam) {
+        throw new NotFoundException(
+          `Time com id ${updatePlayerDto.teamId} não encontrado.`,
+        );
+      }
+
+      player.team = newTeam;
+    }
+
+    Object.assign(player, updatePlayerDto);
+    await this.playerRepository.save(player);
+
     return player;
   }
 
-  async deletePlayer(playerId: number): Promise<void> {
+  async deletePlayer(playerId: number) {
     await this.playerRepository.delete(playerId);
+
+    return {
+      message: `Jogador com id ${playerId} deletado com sucesso.`,
+    };
   }
 }

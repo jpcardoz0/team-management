@@ -14,7 +14,6 @@ import {
 import { PlayerService } from './player.service';
 import { CreatePlayerDto } from './dto/CreatePlayer.dto';
 import { UpdatePlayerDto } from './dto/UpdatePlayer.dto';
-import { Player } from 'src/entities/player.entity';
 
 @Controller('players')
 export class PlayerController {
@@ -38,7 +37,8 @@ export class PlayerController {
   }
 
   @Post()
-  createPlayer(@Body() createPlayerDto: CreatePlayerDto): Promise<Player> {
+  @UsePipes(new ValidationPipe())
+  createPlayer(@Body() createPlayerDto: CreatePlayerDto) {
     return this.playerService.createPlayer(createPlayerDto);
   }
 

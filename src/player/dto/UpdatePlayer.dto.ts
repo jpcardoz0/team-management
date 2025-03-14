@@ -1,4 +1,4 @@
-import { IsInt, IsOptional, IsString } from 'class-validator';
+import { IsInt, IsOptional, IsString, Min } from 'class-validator';
 
 export class UpdatePlayerDto {
   @IsOptional()
@@ -19,5 +19,6 @@ export class UpdatePlayerDto {
 
   @IsOptional()
   @IsInt()
+  @Min(1)
   teamId: number;
 }

@@ -1,6 +1,13 @@
-import { Entity, Column, PrimaryGeneratedColumn, ManyToOne } from 'typeorm';
+import {
+  Entity,
+  Column,
+  PrimaryGeneratedColumn,
+  ManyToOne,
+  Unique,
+} from 'typeorm';
 import { Team } from './team.entity';
 
+@Unique(['name'])
 @Entity()
 export class Player {
   @PrimaryGeneratedColumn()
