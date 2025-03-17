@@ -30,12 +30,6 @@ export class PlayerController {
     return this.playerService.getPlayer(playerId);
   }
 
-  @Get('teams/:teamId')
-  @UsePipes(new ValidationPipe())
-  getPlayerByTeamId(@Param('teamId', ParseIntPipe) teamId: number) {
-    return this.playerService.getPlayerByTeamId(teamId);
-  }
-
   @Post()
   @UsePipes(new ValidationPipe())
   createPlayer(@Body() createPlayerDto: CreatePlayerDto) {

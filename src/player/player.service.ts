@@ -20,39 +20,23 @@ export class PlayerService {
   ) {}
 
   async getAllPlayers(): Promise<Player[]> {
-    const players = await this.playerRepository.find();
+    const players = await this.playerRepository.find({
+      relations: ['statistic'],
+    });
     return players;
   }
 
   async getPlayer(playerId: number): Promise<Player> {
-    const player = await this.playerRepository.findOneBy({ id: playerId });
+    const player = await this.playerRepository.findOne({
+      where: { id: playerId },
+      relations: ['statistic'],
+    });
 
     if (!player) {
-      throw new NotFoundException('Jogador não encontrado.');
+      throw new NotFoundException(`Jogador com id ${playerId} não encontrado.`);
     }
 
     return player;
-  }
-
-  async getPlayerByTeamId(teamId: number): Promise<Player> {
-    const team = await this.teamRepository.findOneBy({ id: teamId });
-
-    if (!team) {
-      throw new NotFoundException('Time não encontrado.');
-    }
-
-    const players = await this.playerRepository.findOne({
-      where: {
-        team: { id: teamId },
-      },
-      relations: ['team'],
-    });
-
-    if (!players) {
-      throw new Error('Jogador não encontrado');
-    }
-
-    return players;
   }
 
   async createPlayer(createPlayerDto: CreatePlayerDto): Promise<Player> {
