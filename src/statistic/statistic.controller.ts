@@ -25,23 +25,24 @@ export class StatisticController {
   }
 
   @Get(':statsId')
-  getStats(@Param('statsId', ParseIntPipe) statsId: number) {
-    return this.statsService.getStats(statsId);
+  @UsePipes(new ValidationPipe())
+  getStatsById(@Param('statsId', ParseIntPipe) statsId: number) {
+    return this.statsService.getStatsById(statsId);
   }
 
   @Post()
   @UsePipes(new ValidationPipe())
-  createStats(@Body() createStatsDto: CreateStatisticDto) {
-    return this.statsService.createStats(createStatsDto);
+  createStats(@Body() dto: CreateStatisticDto) {
+    return this.statsService.createStats(dto);
   }
 
   @Put(':statsId')
   @UsePipes(new ValidationPipe())
   updateStats(
     @Param('statsId', ParseIntPipe) statsId: number,
-    @Body() updateStatsDto: UpdateStatsDto,
+    @Body() dto: UpdateStatsDto,
   ) {
-    return this.statsService.updateStats(statsId, updateStatsDto);
+    return this.statsService.updateStats(statsId, dto);
   }
 
   @Delete(':statsId')

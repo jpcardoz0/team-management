@@ -1,4 +1,4 @@
-import { Column, Entity, ManyToOne, PrimaryGeneratedColumn } from 'typeorm';
+import { Column, Entity, OneToOne, PrimaryGeneratedColumn } from 'typeorm';
 import { Player } from './player.entity';
 
 @Entity()
@@ -15,7 +15,7 @@ export class Statistic {
   @Column()
   matches: number;
 
-  @ManyToOne(() => Player, (player) => player.statistic, {
+  @OneToOne(() => Player, (player) => player.statistics, {
     onDelete: 'CASCADE',
   })
   player: Player;

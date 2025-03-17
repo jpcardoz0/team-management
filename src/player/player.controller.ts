@@ -26,23 +26,23 @@ export class PlayerController {
 
   @Get(':playerId')
   @UsePipes(new ValidationPipe())
-  getPlayer(@Param('playerId', ParseIntPipe) playerId: number) {
-    return this.playerService.getPlayer(playerId);
+  getPlayerById(@Param('playerId', ParseIntPipe) playerId: number) {
+    return this.playerService.getPlayerById(playerId);
   }
 
   @Post()
   @UsePipes(new ValidationPipe())
-  createPlayer(@Body() createPlayerDto: CreatePlayerDto) {
-    return this.playerService.createPlayer(createPlayerDto);
+  createPlayer(@Body() dto: CreatePlayerDto) {
+    return this.playerService.createPlayer(dto);
   }
 
   @Put(':playerId')
   @UsePipes(new ValidationPipe())
   updatePlayer(
     @Param('playerId', ParseIntPipe) playerId: number,
-    @Body() updatePlayerDto: UpdatePlayerDto,
+    @Body() dto: UpdatePlayerDto,
   ) {
-    return this.playerService.updatePlayer(playerId, updatePlayerDto);
+    return this.playerService.updatePlayer(playerId, dto);
   }
 
   @Delete(':playerId')

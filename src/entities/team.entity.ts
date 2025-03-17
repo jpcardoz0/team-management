@@ -5,6 +5,7 @@ import {
   PrimaryGeneratedColumn,
   Unique,
 } from 'typeorm';
+
 import { getTodayDate } from 'src/utils/dateFunctions';
 import { Player } from './player.entity';
 
@@ -28,5 +29,5 @@ export class Team {
   foundationDate: string;
 
   @OneToMany(() => Player, (player) => player.team, { cascade: true })
-  player: Player[];
+  players: Player[];
 }

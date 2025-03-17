@@ -9,11 +9,11 @@ export class UpdateTeamDto {
   @IsString()
   stadium: string;
 
-  @IsString()
   @IsOptional()
+  @IsString()
   location: string;
 
-  @IsString()
   @IsOptional()
+  @IsString()
   foundationDate: string;
 }

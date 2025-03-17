@@ -2,10 +2,12 @@ import {
   Entity,
   Column,
   PrimaryGeneratedColumn,
-  OneToMany,
   ManyToOne,
   Unique,
+  OneToOne,
+  JoinColumn,
 } from 'typeorm';
+
 import { Team } from './team.entity';
 import { Statistic } from './statistic.entity';
 
@@ -27,11 +29,12 @@ export class Player {
   @Column()
   dob: string;
 
-  @ManyToOne(() => Team, (team) => team.player, { onDelete: 'CASCADE' })
-  team: Team;
+  @ManyToOne(() => Team, (team) => team.players, { onDelete: 'CASCADE' })
+  team?: Team | null;
 
-  @OneToMany(() => Statistic, (statistic) => statistic.player, {
+  @OneToOne(() => Statistic, (statistic) => statistic.player, {
     cascade: true,
   })
-  statistic: Statistic[];
+  @JoinColumn()
+  statistics: Statistic;
 }

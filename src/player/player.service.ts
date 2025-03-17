@@ -21,15 +21,15 @@ export class PlayerService {
 
   async getAllPlayers(): Promise<Player[]> {
     const players = await this.playerRepository.find({
-      relations: ['statistic'],
+      relations: ['statistics'],
     });
     return players;
   }
 
-  async getPlayer(playerId: number): Promise<Player> {
+  async getPlayerById(playerId: number): Promise<Player> {
     const player = await this.playerRepository.findOne({
       where: { id: playerId },
-      relations: ['statistic'],
+      relations: ['statistics'],
     });
 
     if (!player) {
@@ -39,26 +39,42 @@ export class PlayerService {
     return player;
   }
 
-  async createPlayer(createPlayerDto: CreatePlayerDto): Promise<Player> {
-    const playerTeam = await this.teamRepository.findOne({
+  async createPlayer(dto: CreatePlayerDto): Promise<Player> {
+    const existingPlayer = await this.playerRepository.findOneBy({
+      name: dto.name,
+    });
+
+    if (existingPlayer) {
+      throw new BadRequestException(
+        `O jogador ${existingPlayer.name} já existe.`,
+      );
+    }
+
+    if (!validateDate(dto.dob)) {
+      throw new BadRequestException(
+        'A data informada é inválida. Formato correto: YYYY-MM-DD',
+      );
+    }
+
+    let playerTeam = await this.teamRepository.findOne({
       where: {
-        id: createPlayerDto.teamId,
+        id: dto.teamId,
       },
     });
 
-    if (!validateDate(createPlayerDto.dob)) {
-      throw new BadRequestException('A data informada é inválida.');
+    if (!playerTeam) {
+      throw new NotFoundException(`Time com id ${dto.teamId} não encontrado.`);
     }
 
-    if (!playerTeam) {
-      throw new NotFoundException('Time não encontrado.');
+    if (!dto.teamId) {
+      playerTeam = null;
     }
 
     const newPlayer = this.playerRepository.create({
-      name: createPlayerDto.name,
-      nationality: createPlayerDto.nationality,
-      dob: createPlayerDto.dob,
-      position: createPlayerDto.position,
+      name: dto.name,
+      nationality: dto.nationality,
+      dob: dto.dob,
+      position: dto.position,
       team: playerTeam,
     });
 
@@ -66,35 +82,46 @@ export class PlayerService {
     return newPlayer;
   }
 
-  async updatePlayer(
-    playerId: number,
-    updatePlayerDto: UpdatePlayerDto,
-  ): Promise<Player> {
+  async updatePlayer(playerId: number, dto: UpdatePlayerDto): Promise<Player> {
+    const existingPlayer = await this.playerRepository.findOneBy({
+      name: dto.name,
+    });
+
+    if (existingPlayer) {
+      throw new BadRequestException(
+        `O jogador ${existingPlayer.name} já existe.`,
+      );
+    }
+
+    if (!validateDate(dto.dob)) {
+      throw new BadRequestException(
+        'A data informada é inválida. Formato correto: YYYY-MM-DD',
+      );
+    }
+
     const player = await this.playerRepository.findOneBy({ id: playerId });
 
-    if (!validateDate(updatePlayerDto.dob)) {
-      throw new BadRequestException('A data informada é inválida.');
-    }
-
     if (!player) {
-      throw new NotFoundException('Jogador não encontrado.');
+      throw new NotFoundException(
+        `Jogador com id ${playerId} não foi encontrado.`,
+      );
     }
 
-    if (updatePlayerDto.teamId) {
+    if (dto.teamId) {
       const newTeam = await this.teamRepository.findOneBy({
-        id: updatePlayerDto.teamId,
+        id: dto.teamId,
       });
 
       if (!newTeam) {
         throw new NotFoundException(
-          `Time com id ${updatePlayerDto.teamId} não encontrado.`,
+          `Time com id ${dto.teamId} não encontrado.`,
         );
       }
 
       player.team = newTeam;
     }
 
-    Object.assign(player, updatePlayerDto);
+    Object.assign(player, dto);
     await this.playerRepository.save(player);
 
     return player;

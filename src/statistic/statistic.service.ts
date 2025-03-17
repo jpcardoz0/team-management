@@ -10,18 +10,18 @@ import { Player } from 'src/entities/player.entity';
 @Injectable()
 export class StatisticService {
   constructor(
-    @InjectRepository(Statistic) private StatsRepository: Repository<Statistic>,
+    @InjectRepository(Statistic) private statsRepository: Repository<Statistic>,
     @InjectRepository(Player) private PlayerRepository: Repository<Player>,
   ) {}
 
   async getAllStats(): Promise<Statistic[]> {
-    const stats = await this.StatsRepository.find();
+    const stats = await this.statsRepository.find();
 
     return stats;
   }
 
-  async getStats(statsId: number) {
-    const stats = await this.StatsRepository.findOneBy({ id: statsId });
+  async getStatsById(statsId: number) {
+    const stats = await this.statsRepository.findOneBy({ id: statsId });
 
     if (!stats) {
       throw new NotFoundException(
@@ -32,25 +32,25 @@ export class StatisticService {
     return stats;
   }
 
-  async createStats(createStatsDto: CreateStatisticDto): Promise<Statistic> {
+  async createStats(dto: CreateStatisticDto): Promise<Statistic> {
     const statsPlayer = await this.PlayerRepository.findOneBy({
-      id: createStatsDto.playerId,
+      id: dto.playerId,
     });
 
     if (!statsPlayer) {
       throw new NotFoundException(
-        `Jogador com id ${createStatsDto.playerId} não foi encontrado.`,
+        `Jogador com id ${dto.playerId} não foi encontrado.`,
       );
     }
 
-    const newStats = this.StatsRepository.create({
-      goals: createStatsDto.goals,
-      assists: createStatsDto.assists,
-      matches: createStatsDto.assists,
+    const newStats = this.statsRepository.create({
+      goals: dto.goals,
+      assists: dto.assists,
+      matches: dto.assists,
       player: statsPlayer,
     });
 
-    await this.StatsRepository.save(newStats);
+    await this.statsRepository.save(newStats);
     return newStats;
   }
 
@@ -58,7 +58,7 @@ export class StatisticService {
     statsId: number,
     updateStatsDto: UpdateStatsDto,
   ): Promise<Statistic> {
-    const stats = await this.StatsRepository.findOneBy({
+    const stats = await this.statsRepository.findOneBy({
       id: statsId,
     });
 
@@ -80,13 +80,13 @@ export class StatisticService {
       stats.player = newPlayer;
     }
     Object.assign(stats, updateStatsDto);
-    await this.StatsRepository.save(stats);
+    await this.statsRepository.save(stats);
 
     return stats;
   }
 
   async deleteStats(statsId: number) {
-    await this.StatsRepository.delete(statsId);
+    await this.statsRepository.delete(statsId);
     return {
       message: `Estatísticas com id ${statsId} deletadas com sucesso.`,
     };

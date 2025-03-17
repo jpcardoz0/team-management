@@ -26,22 +26,23 @@ export class TeamController {
 
   @Get(':teamId')
   @UsePipes(new ValidationPipe())
-  getTeam(@Param('teamId', ParseIntPipe) teamId: number) {
-    return this.teamService.getTeam(teamId);
+  getTeamById(@Param('teamId', ParseIntPipe) teamId: number) {
+    return this.teamService.getTeamById(teamId);
   }
 
   @Post()
-  createTeam(@Body() createTeamDto: CreateTeamDto) {
-    return this.teamService.createTeam(createTeamDto);
+  @UsePipes(new ValidationPipe())
+  createTeam(@Body() dto: CreateTeamDto) {
+    return this.teamService.createTeam(dto);
   }
 
   @Put(':teamId')
   @UsePipes(new ValidationPipe())
   updateTeam(
     @Param('teamId', ParseIntPipe) teamId: number,
-    @Body() updateTeamDto: UpdateTeamDto,
+    @Body() dto: UpdateTeamDto,
   ) {
-    return this.teamService.updateTeam(teamId, updateTeamDto);
+    return this.teamService.updateTeam(teamId, dto);
   }
 
   @Delete(':teamId')

@@ -18,52 +18,55 @@ export class TeamService {
   ) {}
 
   async getAllTeams(): Promise<Team[]> {
-    const teams = await this.teamRepository.find({ relations: ['player'] });
+    const teams = await this.teamRepository.find({ relations: ['players'] });
     return teams;
   }
 
-  async getTeam(teamId: number): Promise<Team> {
+  async getTeamById(teamId: number): Promise<Team> {
     const team = await this.teamRepository.findOne({
       where: { id: teamId },
-      relations: ['player'],
+      relations: ['players'],
     });
 
     if (!team) {
-      throw new NotFoundException('Time não encontrado.');
+      throw new NotFoundException(`Time com id ${teamId} não foi encontrado.`);
     }
 
     return team;
   }
 
-  async createTeam(createTeamDto: CreateTeamDto): Promise<Team> {
+  async createTeam(dto: CreateTeamDto): Promise<Team> {
     const newTeam = this.teamRepository.create({
-      name: createTeamDto.name,
-      stadium: createTeamDto.stadium,
-      location: createTeamDto.location,
-      foundationDate: createTeamDto.foundationDate,
+      name: dto.name,
+      stadium: dto.stadium,
+      location: dto.location,
+      foundationDate: dto.foundationDate,
     });
 
-    if (!validateDate(createTeamDto.foundationDate)) {
-      throw new BadRequestException('A data informada é inválida.');
+    if (dto.foundationDate) {
+      if (!validateDate(dto.foundationDate)) {
+        throw new BadRequestException(
+          'A data informada é inválida. Formato correto: YYYY-MM-DD',
+        );
+      }
     }
 
     await this.teamRepository.save(newTeam);
     return newTeam;
   }
 
-  async updateTeam(
-    teamId: number,
-    updateTeamDto: UpdateTeamDto,
-  ): Promise<Team> {
-    await this.teamRepository.update(teamId, updateTeamDto);
+  async updateTeam(teamId: number, dto: UpdateTeamDto): Promise<Team> {
+    await this.teamRepository.update(teamId, dto);
     const team = await this.teamRepository.findOne({ where: { id: teamId } });
 
-    if (!validateDate(updateTeamDto.foundationDate)) {
-      throw new BadRequestException('A data informada é inválida.');
+    if (!validateDate(dto.foundationDate)) {
+      throw new BadRequestException(
+        'A data informada é inválida. Formato correto: YYYY-MM-DD',
+      );
     }
 
     if (!team) {
-      throw new NotFoundException('Time não encontrado.');
+      throw new NotFoundException(`Time com id ${teamId} não foi encontrado.`);
     }
     return team;
   }

@@ -1,4 +1,4 @@
-import { IsInt, IsNotEmpty, IsOptional } from 'class-validator';
+import { IsInt, IsNotEmpty } from 'class-validator';
 
 export class CreateStatisticDto {
   @IsNotEmpty({ message: 'O número de gols deve ser informado.' })
@@ -13,7 +13,7 @@ export class CreateStatisticDto {
   @IsInt()
   matches: number;
 
-  @IsOptional()
+  @IsNotEmpty({ message: 'O ID do jogador deve ser informado.' })
   @IsInt()
   playerId: number;
 }
