@@ -6,6 +6,8 @@ import { TeamModule } from './team/team.module';
 import { ConfigModule } from '@nestjs/config';
 import { PlayerModule } from './player/player.module';
 import { StatisticModule } from './statistic/statistic.module';
+import { AuthModule } from './auth/auth.module';
+import { UserModule } from './user/user.module';
 
 @Module({
   imports: [
@@ -25,6 +27,8 @@ import { StatisticModule } from './statistic/statistic.module';
     TeamModule,
     PlayerModule,
     StatisticModule,
+    AuthModule,
+    UserModule,
   ],
   controllers: [AppController],
   providers: [AppService],
