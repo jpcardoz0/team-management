@@ -36,12 +36,41 @@ export class TeamService {
   }
 
   async createTeam(dto: CreateTeamDto): Promise<Team> {
+    const existingTeam = await this.teamRepository.findOne({
+      where: { name: dto.name },
+    });
+
+    if (existingTeam) {
+      throw new BadRequestException(`${dto.name} já foi criado.`);
+    }
+
     const newTeam = this.teamRepository.create({
       name: dto.name,
       stadium: dto.stadium,
       location: dto.location,
       foundationDate: dto.foundationDate,
     });
+
+    if (!validateDate(dto.foundationDate)) {
+      throw new BadRequestException(
+        'A data informada é inválida. Formato correto: YYYY-MM-DD',
+      );
+    }
+
+    await this.teamRepository.save(newTeam);
+    return newTeam;
+  }
+
+  async updateTeam(teamId: number, dto: UpdateTeamDto): Promise<Team> {
+    if (dto.name) {
+      const existingTeam = await this.teamRepository.findOneBy({
+        name: dto.name,
+      });
+
+      if (existingTeam) {
+        throw new BadRequestException(`${dto.name} já foi criado.`);
+      }
+    }
 
     if (dto.foundationDate) {
       if (!validateDate(dto.foundationDate)) {
@@ -51,31 +80,29 @@ export class TeamService {
       }
     }
 
-    await this.teamRepository.save(newTeam);
-    return newTeam;
-  }
-
-  async updateTeam(teamId: number, dto: UpdateTeamDto): Promise<Team> {
-    await this.teamRepository.update(teamId, dto);
-    const team = await this.teamRepository.findOne({ where: { id: teamId } });
-
-    if (!validateDate(dto.foundationDate)) {
-      throw new BadRequestException(
-        'A data informada é inválida. Formato correto: YYYY-MM-DD',
-      );
-    }
+    const team = await this.teamRepository.findOneBy({ id: teamId });
 
     if (!team) {
       throw new NotFoundException(`Time com id ${teamId} não foi encontrado.`);
     }
+
+    Object.assign(team, dto);
+    await this.teamRepository.save(team);
+
     return team;
   }
 
   async deleteTeam(teamId: number) {
+    const existingTeam = await this.teamRepository.findOneBy({ id: teamId });
+
+    if (!existingTeam) {
+      throw new NotFoundException(`Time com id ${teamId} não foi encontrado.`);
+    }
+
     await this.teamRepository.delete(teamId);
 
     return {
-      message: `Time com id ${teamId} deletado com sucesso.`,
+      message: `Time com id ${teamId} foi deletado com suceso.`,
     };
   }
 }

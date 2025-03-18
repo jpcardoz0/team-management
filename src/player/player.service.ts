@@ -23,6 +23,7 @@ export class PlayerService {
     const players = await this.playerRepository.find({
       relations: ['statistics'],
     });
+
     return players;
   }
 
@@ -83,20 +84,24 @@ export class PlayerService {
   }
 
   async updatePlayer(playerId: number, dto: UpdatePlayerDto): Promise<Player> {
-    const existingPlayer = await this.playerRepository.findOneBy({
-      name: dto.name,
-    });
+    if (dto.name) {
+      const existingPlayer = await this.playerRepository.findOneBy({
+        name: dto.name,
+      });
 
-    if (existingPlayer) {
-      throw new BadRequestException(
-        `O jogador ${existingPlayer.name} já existe.`,
-      );
+      if (existingPlayer) {
+        throw new BadRequestException(
+          `O jogador ${existingPlayer.name} já existe.`,
+        );
+      }
     }
 
-    if (!validateDate(dto.dob)) {
-      throw new BadRequestException(
-        'A data informada é inválida. Formato correto: YYYY-MM-DD',
-      );
+    if (dto.dob) {
+      if (!validateDate(dto.dob)) {
+        throw new BadRequestException(
+          'A data informada é inválida. Formato correto: YYYY-MM-DD',
+        );
+      }
     }
 
     const player = await this.playerRepository.findOneBy({ id: playerId });
@@ -128,6 +133,16 @@ export class PlayerService {
   }
 
   async deletePlayer(playerId: number) {
+    const existingPlayer = await this.playerRepository.findOneBy({
+      id: playerId,
+    });
+
+    if (!existingPlayer) {
+      throw new NotFoundException(
+        `Jogador com id ${playerId} não foi encontrado.`,
+      );
+    }
+
     await this.playerRepository.delete(playerId);
 
     return {

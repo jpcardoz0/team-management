@@ -1,4 +1,8 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import {
+  BadRequestException,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 
@@ -14,24 +18,6 @@ export class StatisticService {
     @InjectRepository(Player) private PlayerRepository: Repository<Player>,
   ) {}
 
-  async getAllStats(): Promise<Statistic[]> {
-    const stats = await this.statsRepository.find();
-
-    return stats;
-  }
-
-  async getStatsById(statsId: number) {
-    const stats = await this.statsRepository.findOneBy({ id: statsId });
-
-    if (!stats) {
-      throw new NotFoundException(
-        `Estatísticas com id ${statsId} não foram encontradas.`,
-      );
-    }
-
-    return stats;
-  }
-
   async createStats(dto: CreateStatisticDto): Promise<Statistic> {
     const statsPlayer = await this.PlayerRepository.findOneBy({
       id: dto.playerId,
@@ -40,6 +26,16 @@ export class StatisticService {
     if (!statsPlayer) {
       throw new NotFoundException(
         `Jogador com id ${dto.playerId} não foi encontrado.`,
+      );
+    }
+
+    const stats = await this.statsRepository.findOne({
+      where: { player: statsPlayer },
+    });
+
+    if (stats) {
+      throw new BadRequestException(
+        `Jogador com id ${dto.playerId} já tem estatísticas associadas a ele.`,
       );
     }
 
@@ -54,10 +50,7 @@ export class StatisticService {
     return newStats;
   }
 
-  async updateStats(
-    statsId: number,
-    updateStatsDto: UpdateStatsDto,
-  ): Promise<Statistic> {
+  async updateStats(statsId: number, dto: UpdateStatsDto): Promise<Statistic> {
     const stats = await this.statsRepository.findOneBy({
       id: statsId,
     });
@@ -66,29 +59,22 @@ export class StatisticService {
       throw new NotFoundException('Essas estatísticas não existem.');
     }
 
-    if (updateStatsDto.playerId) {
+    if (dto.playerId) {
       const newPlayer = await this.PlayerRepository.findOneBy({
-        id: updateStatsDto.playerId,
+        id: dto.playerId,
       });
 
       if (!newPlayer) {
         throw new NotFoundException(
-          `Jogador com id ${updateStatsDto.playerId} não encontrado.`,
+          `Jogador com id ${dto.playerId} não encontrado.`,
         );
       }
 
       stats.player = newPlayer;
     }
-    Object.assign(stats, updateStatsDto);
+    Object.assign(stats, dto);
     await this.statsRepository.save(stats);
 
     return stats;
-  }
-
-  async deleteStats(statsId: number) {
-    await this.statsRepository.delete(statsId);
-    return {
-      message: `Estatísticas com id ${statsId} deletadas com sucesso.`,
-    };
   }
 }

@@ -11,7 +11,6 @@ import { Player } from './player.entity';
 
 @Entity()
 @Unique(['name'])
-@Unique(['stadium'])
 export class Team {
   @PrimaryGeneratedColumn()
   id: number;

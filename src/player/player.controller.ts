@@ -46,6 +46,7 @@ export class PlayerController {
   }
 
   @Delete(':playerId')
+  @UsePipes(new ValidationPipe())
   deletePlayer(@Param('playerId', ParseIntPipe) playerId: number) {
     return this.playerService.deletePlayer(playerId);
   }
