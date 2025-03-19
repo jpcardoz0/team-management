@@ -9,12 +9,15 @@ import {
   UsePipes,
   ValidationPipe,
   ParseIntPipe,
+  UseGuards,
 } from '@nestjs/common';
 
 import { PlayerService } from './player.service';
 import { CreatePlayerDto } from './dto/CreatePlayer.dto';
 import { UpdatePlayerDto } from './dto/UpdatePlayer.dto';
+import { JwtAuthGuard } from 'src/auth/guards/jwt.guard';
 
+@UseGuards(JwtAuthGuard)
 @Controller('players')
 export class PlayerController {
   constructor(private readonly playerService: PlayerService) {}

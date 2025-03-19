@@ -9,12 +9,15 @@ import {
   UsePipes,
   ValidationPipe,
   ParseIntPipe,
+  UseGuards,
 } from '@nestjs/common';
 
 import { TeamService } from './team.service';
 import { CreateTeamDto } from './dto/CreateTeam.dto';
 import { UpdateTeamDto } from './dto/UpdateTeam.dto';
+import { JwtAuthGuard } from 'src/auth/guards/jwt.guard';
 
+@UseGuards(JwtAuthGuard)
 @Controller('teams')
 export class TeamController {
   constructor(private readonly teamService: TeamService) {}

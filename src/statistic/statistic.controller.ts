@@ -7,12 +7,15 @@ import {
   ValidationPipe,
   ParseIntPipe,
   Param,
+  UseGuards,
 } from '@nestjs/common';
 
 import { StatisticService } from './statistic.service';
 import { CreateStatisticDto } from './dto/CreateStatistic.dto';
 import { UpdateStatsDto } from './dto/UpdateStats.dto';
+import { JwtAuthGuard } from 'src/auth/guards/jwt.guard';
 
+@UseGuards(JwtAuthGuard)
 @Controller('statistics')
 export class StatisticController {
   constructor(private readonly statsService: StatisticService) {}
