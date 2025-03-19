@@ -44,17 +44,14 @@ export class TeamService {
       throw new BadRequestException(`${dto.name} já foi criado.`);
     }
 
-    const newTeam = this.teamRepository.create({
-      name: dto.name,
-      stadium: dto.stadium,
-      location: dto.location,
-      foundationDate: dto.foundationDate,
-    });
+    const newTeam = this.teamRepository.create(dto);
 
-    if (!validateDate(dto.foundationDate)) {
-      throw new BadRequestException(
-        'A data informada é inválida. Formato correto: YYYY-MM-DD',
-      );
+    if (dto.foundationDate) {
+      if (!validateDate(dto.foundationDate)) {
+        throw new BadRequestException(
+          'A data informada é inválida. Formato correto: YYYY-MM-DD',
+        );
+      }
     }
 
     await this.teamRepository.save(newTeam);
