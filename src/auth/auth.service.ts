@@ -5,6 +5,7 @@ import { JwtService } from '@nestjs/jwt';
 
 import { User } from 'src/entities/user.entity';
 import { AuthDto } from './dto/auth.dto';
+import { comparePassword } from 'src/utils/bcrypt';
 
 @Injectable()
 export class AuthService {
@@ -22,7 +23,9 @@ export class AuthService {
       throw new HttpException('Usuário não encontrado.', 401);
     }
 
-    if (dto.password === findUser.password) {
+    const matched = comparePassword(dto.password, findUser.password);
+
+    if (matched || dto.password === findUser.password) {
       const { ...user } = findUser;
       return this.jwtService.sign(user);
     }
