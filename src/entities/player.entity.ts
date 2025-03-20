@@ -36,5 +36,5 @@ export class Player {
     cascade: true,
   })
   @JoinColumn()
-  statistics: Statistic;
+  statistics: Statistic | null;
 }

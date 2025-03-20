@@ -48,6 +48,12 @@ export class PlayerController {
     return this.playerService.updatePlayer(playerId, dto);
   }
 
+  @Put(':playerId/deleteStats')
+  @UsePipes(new ValidationPipe())
+  setStatsToNull(@Param('playerId', ParseIntPipe) playerId: number) {
+    return this.playerService.setStatsToNull(playerId);
+  }
+
   @Delete(':playerId')
   @UsePipes(new ValidationPipe())
   deletePlayer(@Param('playerId', ParseIntPipe) playerId: number) {

@@ -8,6 +8,7 @@ import { Repository } from 'typeorm';
 
 import { Team } from 'src/entities/team.entity';
 import { Player } from 'src/entities/player.entity';
+import { Statistic } from 'src/entities/statistic.entity';
 import { CreatePlayerDto } from './dto/CreatePlayer.dto';
 import { UpdatePlayerDto } from './dto/UpdatePlayer.dto';
 import { validateDate } from 'src/utils/dateFunctions';
@@ -15,6 +16,7 @@ import { validateDate } from 'src/utils/dateFunctions';
 @Injectable()
 export class PlayerService {
   constructor(
+    @InjectRepository(Statistic) private statsRepository: Repository<Statistic>,
     @InjectRepository(Player) private playerRepository: Repository<Player>,
     @InjectRepository(Team) private teamRepository: Repository<Team>,
   ) {}
@@ -143,10 +145,45 @@ export class PlayerService {
       );
     }
 
+    const playerStats = await this.statsRepository.findOne({
+      where: { player: existingPlayer },
+    });
+
     await this.playerRepository.delete(playerId);
+
+    if (playerStats) {
+      await this.statsRepository.delete(playerStats.id);
+    }
 
     return {
       message: `Jogador com id ${playerId} deletado com sucesso.`,
     };
+  }
+
+  async setStatsToNull(playerId: number) {
+    const statsPlayer = await this.playerRepository.findOneBy({ id: playerId });
+
+    if (!statsPlayer) {
+      throw new NotFoundException(
+        `Jogador com o id ${playerId} não foi encontrado.`,
+      );
+    }
+
+    const playerStats = await this.statsRepository.findOne({
+      where: { player: statsPlayer },
+    });
+
+    if (playerStats) {
+      await this.playerRepository.update(playerId, { statistics: null });
+      await this.statsRepository.delete(playerStats);
+
+      return {
+        message: `Estatísticas do jogador com id ${playerId} foram apagadas com sucesso.`,
+      };
+    } else {
+      return {
+        message: `Jogador com id ${playerId} não tem estatísticas associadas a ele.`,
+      };
+    }
   }
 }
