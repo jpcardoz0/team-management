@@ -40,9 +40,7 @@ export class StatisticService {
     }
 
     const newStats = this.statsRepository.create({
-      goals: dto.goals,
-      assists: dto.assists,
-      matches: dto.assists,
+      ...dto,
       player: statsPlayer,
     });
 
@@ -51,6 +49,10 @@ export class StatisticService {
   }
 
   async updateStats(statsId: number, dto: UpdateStatsDto): Promise<Statistic> {
+    if (dto === undefined) {
+      throw new BadRequestException('Um JSON deve ser inserido.');
+    }
+
     const stats = await this.statsRepository.findOneBy({
       id: statsId,
     });
@@ -72,6 +74,7 @@ export class StatisticService {
 
       stats.player = newPlayer;
     }
+
     Object.assign(stats, dto);
     await this.statsRepository.save(stats);
 

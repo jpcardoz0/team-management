@@ -35,6 +35,10 @@ export class UserService {
   }
 
   async createUser(dto: CreateUserDto): Promise<User> {
+    if (dto.password.length < 6) {
+      throw new BadRequestException('A senha deve ter no mínimo 6 caracteres.');
+    }
+
     const existingUser = await this.userRepository.findOneBy({
       username: dto.username,
     });
@@ -49,22 +53,41 @@ export class UserService {
     const newUser = this.userRepository.create({ ...dto, password });
 
     await this.userRepository.save(newUser);
-
     return newUser;
   }
 
   async updateUser(userId: number, dto: UpdateUserDto): Promise<User> {
-    const existingUser = await this.userRepository.findOneBy({
-      username: dto.username,
-    });
+    if (dto === undefined) {
+      throw new BadRequestException('Um JSON deve ser inserido.');
+    }
 
-    if (existingUser) {
-      throw new BadRequestException(
-        `Já existe um usuário com o nome ${dto.username}.`,
-      );
+    if (dto.username) {
+      const existingUser = await this.userRepository.findOneBy({
+        username: dto.username,
+      });
+
+      if (
+        existingUser &&
+        existingUser.username === dto.username &&
+        existingUser.id !== userId
+      ) {
+        throw new BadRequestException(
+          `Já existe um usuário com o nome ${dto.username}`,
+        );
+      }
+    }
+
+    if (dto.password) {
+      if (dto.password.length < 6) {
+        throw new BadRequestException(
+          'A senha deve ter no mínimo 6 caracteres',
+        );
+      }
+      dto.password = encodePassword(dto.password);
     }
 
     await this.userRepository.update(userId, dto);
+
     const user = await this.userRepository.findOneBy({ id: userId });
 
     if (!user) {

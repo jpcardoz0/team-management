@@ -18,7 +18,7 @@ export class TeamService {
   ) {}
 
   async getAllTeams(): Promise<Team[]> {
-    const teams = await this.teamRepository.find({ relations: ['players'] });
+    const teams = await this.teamRepository.find();
     return teams;
   }
 
@@ -41,17 +41,15 @@ export class TeamService {
     });
 
     if (existingTeam) {
-      throw new BadRequestException(`${dto.name} já foi criado.`);
+      throw new BadRequestException(`Já existe um time com o nome ${dto.name}`);
     }
 
     const newTeam = this.teamRepository.create(dto);
 
-    if (dto.foundationDate) {
-      if (!validateDate(dto.foundationDate)) {
-        throw new BadRequestException(
-          'A data informada é inválida. Formato correto: YYYY-MM-DD',
-        );
-      }
+    if (dto.foundationDate && !validateDate(dto.foundationDate)) {
+      throw new BadRequestException(
+        'A data informada é inválida. Formato correto: YYYY-MM-DD',
+      );
     }
 
     await this.teamRepository.save(newTeam);
@@ -59,22 +57,30 @@ export class TeamService {
   }
 
   async updateTeam(teamId: number, dto: UpdateTeamDto): Promise<Team> {
+    if (dto === undefined) {
+      throw new BadRequestException('Um JSON deve ser inserido.');
+    }
+
     if (dto.name) {
       const existingTeam = await this.teamRepository.findOneBy({
         name: dto.name,
       });
 
-      if (existingTeam) {
-        throw new BadRequestException(`${dto.name} já foi criado.`);
+      if (
+        existingTeam &&
+        existingTeam.name === dto.name &&
+        existingTeam.id !== teamId
+      ) {
+        throw new BadRequestException(
+          `Já existe um time com o nome ${dto.name}`,
+        );
       }
     }
 
-    if (dto.foundationDate) {
-      if (!validateDate(dto.foundationDate)) {
-        throw new BadRequestException(
-          'A data informada é inválida. Formato correto: YYYY-MM-DD',
-        );
-      }
+    if (dto.foundationDate && !validateDate(dto.foundationDate)) {
+      throw new BadRequestException(
+        'A data informada é inválida. Formato correto: YYYY-MM-DD',
+      );
     }
 
     const team = await this.teamRepository.findOneBy({ id: teamId });
@@ -90,9 +96,9 @@ export class TeamService {
   }
 
   async deleteTeam(teamId: number) {
-    const existingTeam = await this.teamRepository.findOneBy({ id: teamId });
+    const team = await this.teamRepository.findOneBy({ id: teamId });
 
-    if (!existingTeam) {
+    if (!team) {
       throw new NotFoundException(`Time com id ${teamId} não foi encontrado.`);
     }
 

@@ -22,10 +22,7 @@ export class PlayerService {
   ) {}
 
   async getAllPlayers(): Promise<Player[]> {
-    const players = await this.playerRepository.find({
-      relations: ['statistics'],
-    });
-
+    const players = await this.playerRepository.find();
     return players;
   }
 
@@ -36,7 +33,9 @@ export class PlayerService {
     });
 
     if (!player) {
-      throw new NotFoundException(`Jogador com id ${playerId} não encontrado.`);
+      throw new NotFoundException(
+        `Jogador com id ${playerId} não foi encontrado.`,
+      );
     }
 
     return player;
@@ -49,7 +48,7 @@ export class PlayerService {
 
     if (existingPlayer) {
       throw new BadRequestException(
-        `O jogador ${existingPlayer.name} já existe.`,
+        `Já existe um jogador com o nome ${existingPlayer.name}.`,
       );
     }
 
@@ -59,25 +58,23 @@ export class PlayerService {
       );
     }
 
-    let playerTeam = await this.teamRepository.findOne({
-      where: {
-        id: dto.teamId,
-      },
-    });
+    let playerTeam: Team | null = null;
+    if (dto.teamId) {
+      playerTeam = await this.teamRepository.findOne({
+        where: {
+          id: dto.teamId,
+        },
+      });
 
-    if (!playerTeam) {
-      throw new NotFoundException(`Time com id ${dto.teamId} não encontrado.`);
-    }
-
-    if (!dto.teamId) {
-      playerTeam = null;
+      if (!playerTeam) {
+        throw new NotFoundException(
+          `Time com id ${dto.teamId} não encontrado.`,
+        );
+      }
     }
 
     const newPlayer = this.playerRepository.create({
-      name: dto.name,
-      nationality: dto.nationality,
-      dob: dto.dob,
-      position: dto.position,
+      ...dto,
       team: playerTeam,
     });
 
@@ -86,24 +83,30 @@ export class PlayerService {
   }
 
   async updatePlayer(playerId: number, dto: UpdatePlayerDto): Promise<Player> {
+    if (dto === undefined) {
+      throw new BadRequestException('Um JSON deve ser inserido');
+    }
+
     if (dto.name) {
       const existingPlayer = await this.playerRepository.findOneBy({
         name: dto.name,
       });
 
-      if (existingPlayer) {
+      if (
+        existingPlayer &&
+        existingPlayer.name === dto.name &&
+        existingPlayer.id !== playerId
+      ) {
         throw new BadRequestException(
-          `O jogador ${existingPlayer.name} já existe.`,
+          `Já existe um jogador com o nome ${existingPlayer.name}.`,
         );
       }
     }
 
-    if (dto.dob) {
-      if (!validateDate(dto.dob)) {
-        throw new BadRequestException(
-          'A data informada é inválida. Formato correto: YYYY-MM-DD',
-        );
-      }
+    if (dto.dob && !validateDate(dto.dob)) {
+      throw new BadRequestException(
+        'A data informada é inválida. Formato correto: YYYY-MM-DD',
+      );
     }
 
     const player = await this.playerRepository.findOneBy({ id: playerId });
