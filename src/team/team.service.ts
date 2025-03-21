@@ -18,7 +18,7 @@ export class TeamService {
   ) {}
 
   async getAllTeams(): Promise<Team[]> {
-    const teams = await this.teamRepository.find({ relations: ['players'] });
+    const teams = await this.teamRepository.find();
     return teams;
   }
 

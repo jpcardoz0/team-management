@@ -20,10 +20,7 @@ export class PlayerService {
   ) {}
 
   async getAllPlayers(): Promise<Player[]> {
-    const players = await this.playerRepository.find({
-      relations: ['statistics'],
-    });
-
+    const players = await this.playerRepository.find();
     return players;
   }
 

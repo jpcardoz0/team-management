@@ -30,11 +30,9 @@ export class Player {
   dob: string;
 
   @ManyToOne(() => Team, (team) => team.players, { onDelete: 'CASCADE' })
-  team?: Team | null;
+  team: Team | null;
 
-  @OneToOne(() => Statistic, (statistic) => statistic.player, {
-    cascade: true,
-  })
+  @OneToOne(() => Statistic, (statistic) => statistic.player)
   @JoinColumn()
   statistics: Statistic;
 }

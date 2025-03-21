@@ -2,12 +2,14 @@ import {
   Column,
   Entity,
   OneToMany,
+  OneToOne,
   PrimaryGeneratedColumn,
   Unique,
 } from 'typeorm';
 
 import { getTodayDate } from 'src/utils/dateFunctions';
 import { Player } from './player.entity';
+import { User } from './user.entity';
 
 @Entity()
 @Unique(['name'])
@@ -29,4 +31,7 @@ export class Team {
 
   @OneToMany(() => Player, (player) => player.team, { cascade: true })
   players: Player[];
+
+  @OneToOne(() => User, (user) => user.team)
+  manager: User;
 }

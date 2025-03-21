@@ -15,8 +15,6 @@ export class Statistic {
   @Column()
   matches: number;
 
-  @OneToOne(() => Player, (player) => player.statistics, {
-    onDelete: 'CASCADE',
-  })
+  @OneToOne(() => Player, (player) => player.statistics)
   player: Player;
 }

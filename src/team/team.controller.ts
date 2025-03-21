@@ -14,7 +14,16 @@ import {
 import { TeamService } from './team.service';
 import { CreateTeamDto } from './dto/CreateTeam.dto';
 import { UpdateTeamDto } from './dto/UpdateTeam.dto';
+<<<<<<< Updated upstream
 
+=======
+//import { JwtAuthGuard } from 'src/auth/guards/jwt.guard';
+import { RolesGuard } from 'src/auth/guards/roles.guard';
+import { Roles } from 'src/decorators/roles.decorator';
+import { Role } from 'src/enums/role.enum';
+
+@UseGuards(RolesGuard)
+>>>>>>> Stashed changes
 @Controller('teams')
 export class TeamController {
   constructor(private readonly teamService: TeamService) {}
@@ -24,6 +33,7 @@ export class TeamController {
     return this.teamService.getAllTeams();
   }
 
+  @Roles(Role.ADMIN, Role.MANAGER)
   @Get(':teamId')
   @UsePipes(new ValidationPipe())
   getTeamById(@Param('teamId', ParseIntPipe) teamId: number) {
