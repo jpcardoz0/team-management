@@ -16,31 +16,38 @@ import { TeamService } from './team.service';
 import { CreateTeamDto } from './dto/CreateTeam.dto';
 import { UpdateTeamDto } from './dto/UpdateTeam.dto';
 import { JwtAuthGuard } from 'src/auth/guards/jwt.guard';
+import { RolesGuard } from 'src/auth/guards/roles.guard';
+import { Roles } from 'src/decorators/role.decorator';
+import { Role } from 'src/enums/role.enum';
 
+@Roles(Role.ADMIN)
+@UseGuards(RolesGuard)
 @UseGuards(JwtAuthGuard)
 @Controller('teams')
 export class TeamController {
   constructor(private readonly teamService: TeamService) {}
 
+  @Roles(Role.ADMIN, Role.MANAGER, Role.USER)
   @Get()
   getAllTeams() {
     return this.teamService.getAllTeams();
   }
 
-  @Get(':teamId')
+  @Roles(Role.ADMIN, Role.MANAGER, Role.USER)
   @UsePipes(new ValidationPipe())
+  @Get(':teamId')
   getTeamById(@Param('teamId', ParseIntPipe) teamId: number) {
     return this.teamService.getTeamById(teamId);
   }
 
-  @Post()
   @UsePipes(new ValidationPipe())
+  @Post()
   createTeam(@Body() dto: CreateTeamDto) {
     return this.teamService.createTeam(dto);
   }
 
-  @Put(':teamId')
   @UsePipes(new ValidationPipe())
+  @Put(':teamId')
   updateTeam(
     @Param('teamId', ParseIntPipe) teamId: number,
     @Body() dto: UpdateTeamDto,
@@ -48,8 +55,8 @@ export class TeamController {
     return this.teamService.updateTeam(teamId, dto);
   }
 
-  @Delete(':teamId')
   @UsePipes(new ValidationPipe())
+  @Delete(':teamId')
   deleteTeam(@Param('teamId', ParseIntPipe) teamId: number) {
     return this.teamService.deleteTeam(teamId);
   }

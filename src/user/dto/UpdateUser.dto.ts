@@ -1,4 +1,5 @@
-import { IsOptional, IsString } from 'class-validator';
+import { IsIn, IsOptional, IsString } from 'class-validator';
+import { Role } from 'src/enums/role.enum';
 
 export class UpdateUserDto {
   @IsOptional()
@@ -8,4 +9,8 @@ export class UpdateUserDto {
   @IsOptional()
   @IsString()
   password: string;
+
+  @IsOptional()
+  @IsIn([Role.ADMIN, Role.MANAGER, Role.USER])
+  role: Role;
 }

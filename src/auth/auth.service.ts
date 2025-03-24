@@ -4,6 +4,8 @@ import { Repository } from 'typeorm';
 import { JwtService } from '@nestjs/jwt';
 
 import { User } from 'src/entities/user.entity';
+import { UserService } from 'src/user/user.service';
+import { CreateUserDto } from 'src/user/dto/CreateUser.dto';
 import { AuthDto } from './dto/auth.dto';
 import { comparePassword } from 'src/utils/bcrypt';
 
@@ -11,8 +13,13 @@ import { comparePassword } from 'src/utils/bcrypt';
 export class AuthService {
   constructor(
     private jwtService: JwtService,
+    private readonly userService: UserService,
     @InjectRepository(User) private userRepository: Repository<User>,
   ) {}
+
+  register(dto: CreateUserDto) {
+    return this.userService.createUser(dto);
+  }
 
   async validateUser(dto: AuthDto) {
     const findUser = await this.userRepository.findOneBy({

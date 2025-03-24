@@ -26,7 +26,7 @@ export class PlayerService {
     return players;
   }
 
-  async getPlayerById(playerId: number): Promise<Player> {
+  async getPlayerStats(playerId: number): Promise<Player> {
     const player = await this.playerRepository.findOne({
       where: { id: playerId },
       relations: ['statistics'],

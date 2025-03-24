@@ -16,21 +16,28 @@ import { PlayerService } from './player.service';
 import { CreatePlayerDto } from './dto/CreatePlayer.dto';
 import { UpdatePlayerDto } from './dto/UpdatePlayer.dto';
 import { JwtAuthGuard } from 'src/auth/guards/jwt.guard';
+import { Roles } from 'src/decorators/role.decorator';
+import { Role } from 'src/enums/role.enum';
+import { RolesGuard } from 'src/auth/guards/roles.guard';
 
+@Roles(Role.ADMIN, Role.MANAGER)
+@UseGuards(RolesGuard)
 @UseGuards(JwtAuthGuard)
 @Controller('players')
 export class PlayerController {
   constructor(private readonly playerService: PlayerService) {}
 
+  @Roles(Role.ADMIN, Role.MANAGER, Role.USER)
   @Get()
   getAllPlayers() {
     return this.playerService.getAllPlayers();
   }
 
+  @Roles(Role.ADMIN, Role.MANAGER, Role.USER)
   @Get(':playerId')
   @UsePipes(new ValidationPipe())
-  getPlayerById(@Param('playerId', ParseIntPipe) playerId: number) {
-    return this.playerService.getPlayerById(playerId);
+  getPlayerStats(@Param('playerId', ParseIntPipe) playerId: number) {
+    return this.playerService.getPlayerStats(playerId);
   }
 
   @Post()
