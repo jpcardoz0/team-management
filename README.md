@@ -1,15 +1,19 @@
 # team-management
-
 API para gerenciamento de times e jogadores
 
 *(entre na branch master para ver o projeto completo)*
 
 # Funcionamento da API
 1- Registrar usuário
+
 2- Logar usuário
+
 3- CRUD usuarios (admin)
+
 4- CRUD times
+
 5- CRUD jogadores
+
 6- CRUD estatísticas
 
 # ROLES UPDATE:
