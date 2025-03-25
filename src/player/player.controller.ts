@@ -10,7 +10,9 @@ import {
   ValidationPipe,
   ParseIntPipe,
   UseGuards,
+  Req,
 } from '@nestjs/common';
+import { Request } from 'express';
 
 import { PlayerService } from './player.service';
 import { CreatePlayerDto } from './dto/CreatePlayer.dto';
@@ -42,28 +44,35 @@ export class PlayerController {
 
   @Post()
   @UsePipes(new ValidationPipe())
-  createPlayer(@Body() dto: CreatePlayerDto) {
-    return this.playerService.createPlayer(dto);
+  createPlayer(@Req() req: Request, @Body() dto: CreatePlayerDto) {
+    return this.playerService.createPlayer(req, dto);
   }
 
   @Put(':playerId')
   @UsePipes(new ValidationPipe())
   updatePlayer(
+    @Req() req: Request,
     @Param('playerId', ParseIntPipe) playerId: number,
     @Body() dto: UpdatePlayerDto,
   ) {
-    return this.playerService.updatePlayer(playerId, dto);
+    return this.playerService.updatePlayer(req, playerId, dto);
   }
 
   @Put(':playerId/deleteStats')
   @UsePipes(new ValidationPipe())
-  setStatsToNull(@Param('playerId', ParseIntPipe) playerId: number) {
-    return this.playerService.setStatsToNull(playerId);
+  setStatsToNull(
+    @Req() req: Request,
+    @Param('playerId', ParseIntPipe) playerId: number,
+  ) {
+    return this.playerService.setStatsToNull(req, playerId);
   }
 
   @Delete(':playerId')
   @UsePipes(new ValidationPipe())
-  deletePlayer(@Param('playerId', ParseIntPipe) playerId: number) {
-    return this.playerService.deletePlayer(playerId);
+  deletePlayer(
+    @Req() req: Request,
+    @Param('playerId', ParseIntPipe) playerId: number,
+  ) {
+    return this.playerService.deletePlayer(req, playerId);
   }
 }

@@ -37,7 +37,7 @@ export class TeamController {
   @UsePipes(new ValidationPipe())
   @Get(':teamId')
   getTeamById(@Param('teamId', ParseIntPipe) teamId: number) {
-    return this.teamService.getTeamById(teamId);
+    return this.teamService.getTeamPlayers(teamId);
   }
 
   @UsePipes(new ValidationPipe())

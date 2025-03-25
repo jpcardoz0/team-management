@@ -2,10 +2,13 @@ import {
   BadRequestException,
   Injectable,
   NotFoundException,
+  UnauthorizedException,
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
+import { Request } from 'express';
 
+import { User } from 'src/entities/user.entity';
 import { Team } from 'src/entities/team.entity';
 import { Player } from 'src/entities/player.entity';
 import { Statistic } from 'src/entities/statistic.entity';
@@ -19,6 +22,7 @@ export class PlayerService {
     @InjectRepository(Statistic) private statsRepository: Repository<Statistic>,
     @InjectRepository(Player) private playerRepository: Repository<Player>,
     @InjectRepository(Team) private teamRepository: Repository<Team>,
+    @InjectRepository(User) private userRepository: Repository<User>,
   ) {}
 
   async getAllPlayers(): Promise<Player[]> {
@@ -41,7 +45,7 @@ export class PlayerService {
     return player;
   }
 
-  async createPlayer(dto: CreatePlayerDto): Promise<Player> {
+  async createPlayer(req: Request, dto: CreatePlayerDto): Promise<Player> {
     const existingPlayer = await this.playerRepository.findOneBy({
       name: dto.name,
     });
@@ -61,15 +65,23 @@ export class PlayerService {
     let playerTeam: Team | null = null;
     if (dto.teamId) {
       playerTeam = await this.teamRepository.findOne({
-        where: {
-          id: dto.teamId,
-        },
+        where: { id: dto.teamId },
+        relations: ['manager'],
       });
 
       if (!playerTeam) {
         throw new NotFoundException(
           `Time com id ${dto.teamId} não encontrado.`,
         );
+      }
+
+      if (playerTeam.manager) {
+        const user = JSON.stringify(req.user);
+        const jsonData = JSON.parse(user);
+
+        if (jsonData.id !== playerTeam.manager.id) {
+          throw new UnauthorizedException();
+        }
       }
     }
 
@@ -82,7 +94,11 @@ export class PlayerService {
     return newPlayer;
   }
 
-  async updatePlayer(playerId: number, dto: UpdatePlayerDto): Promise<Player> {
+  async updatePlayer(
+    req: Request,
+    playerId: number,
+    dto: UpdatePlayerDto,
+  ): Promise<Player> {
     if (dto === undefined) {
       throw new BadRequestException('Um JSON deve ser inserido');
     }
@@ -118,14 +134,24 @@ export class PlayerService {
     }
 
     if (dto.teamId) {
-      const newTeam = await this.teamRepository.findOneBy({
-        id: dto.teamId,
+      const newTeam = await this.teamRepository.findOne({
+        where: { id: dto.teamId },
+        relations: ['manager'],
       });
 
       if (!newTeam) {
         throw new NotFoundException(
           `Time com id ${dto.teamId} não encontrado.`,
         );
+      }
+
+      if (newTeam.manager) {
+        const user = JSON.stringify(req.user);
+        const jsonData = JSON.parse(user);
+
+        if (jsonData.id !== newTeam.manager.id) {
+          throw new UnauthorizedException();
+        }
       }
 
       player.team = newTeam;
@@ -137,7 +163,50 @@ export class PlayerService {
     return player;
   }
 
-  async deletePlayer(playerId: number) {
+  async setStatsToNull(req: Request, playerId: number) {
+    const statsPlayer = await this.playerRepository.findOneBy({ id: playerId });
+
+    if (!statsPlayer) {
+      throw new NotFoundException(
+        `Jogador com o id ${playerId} não foi encontrado.`,
+      );
+    }
+
+    const team = await this.teamRepository.findOne({
+      where: { players: statsPlayer },
+      relations: ['manager'],
+    });
+
+    if (team && team.manager) {
+      const user = JSON.stringify(req.user);
+      const jsonData = JSON.parse(user);
+
+      if (jsonData.id !== team.manager.id) {
+        throw new UnauthorizedException();
+      }
+    }
+
+    const playerStats = await this.statsRepository.findOne({
+      where: { player: statsPlayer },
+    });
+
+    console.log(statsPlayer);
+
+    if (!playerStats) {
+      throw new NotFoundException(
+        `Jogador com id ${playerId} não tem estatísticas associadas a ele.`,
+      );
+    }
+
+    await this.playerRepository.update(playerId, { statistics: null });
+    await this.statsRepository.delete(playerStats.id);
+
+    return {
+      message: `Estatísticas do jogador com id ${playerId} foram apagadas com sucesso.`,
+    };
+  }
+
+  async deletePlayer(req: Request, playerId: number) {
     const existingPlayer = await this.playerRepository.findOneBy({
       id: playerId,
     });
@@ -146,6 +215,20 @@ export class PlayerService {
       throw new NotFoundException(
         `Jogador com id ${playerId} não foi encontrado.`,
       );
+    }
+
+    const team = await this.teamRepository.findOne({
+      where: { players: existingPlayer },
+      relations: ['manager'],
+    });
+
+    if (team && team.manager) {
+      const user = JSON.stringify(req.user);
+      const jsonData = JSON.parse(user);
+
+      if (jsonData.id !== team.manager.id) {
+        throw new UnauthorizedException();
+      }
     }
 
     const playerStats = await this.statsRepository.findOne({
@@ -161,32 +244,5 @@ export class PlayerService {
     return {
       message: `Jogador com id ${playerId} deletado com sucesso.`,
     };
-  }
-
-  async setStatsToNull(playerId: number) {
-    const statsPlayer = await this.playerRepository.findOneBy({ id: playerId });
-
-    if (!statsPlayer) {
-      throw new NotFoundException(
-        `Jogador com o id ${playerId} não foi encontrado.`,
-      );
-    }
-
-    const playerStats = await this.statsRepository.findOne({
-      where: { player: statsPlayer },
-    });
-
-    if (playerStats) {
-      await this.playerRepository.update(playerId, { statistics: null });
-      await this.statsRepository.delete(playerStats);
-
-      return {
-        message: `Estatísticas do jogador com id ${playerId} foram apagadas com sucesso.`,
-      };
-    } else {
-      return {
-        message: `Jogador com id ${playerId} não tem estatísticas associadas a ele.`,
-      };
-    }
   }
 }

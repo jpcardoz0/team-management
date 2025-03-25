@@ -1,4 +1,4 @@
-import { IsOptional, IsString } from 'class-validator';
+import { IsInt, IsOptional, IsString } from 'class-validator';
 
 export class UpdateTeamDto {
   @IsOptional()
@@ -16,4 +16,8 @@ export class UpdateTeamDto {
   @IsOptional()
   @IsString()
   foundationDate: string;
+
+  @IsOptional()
+  @IsInt()
+  managerId: number;
 }

@@ -1,4 +1,4 @@
-import { IsNotEmpty, IsOptional, IsString } from 'class-validator';
+import { IsInt, IsNotEmpty, IsOptional, IsString } from 'class-validator';
 
 export class CreateTeamDto {
   @IsNotEmpty({ message: 'O nome do time deve ser informado.' })
@@ -16,4 +16,8 @@ export class CreateTeamDto {
   @IsOptional()
   @IsString()
   foundationDate: string;
+
+  @IsOptional()
+  @IsInt()
+  managerId: number;
 }

@@ -32,9 +32,7 @@ export class Player {
   @ManyToOne(() => Team, (team) => team.players, { onDelete: 'CASCADE' })
   team?: Team | null;
 
-  @OneToOne(() => Statistic, (statistic) => statistic.player, {
-    cascade: true,
-  })
+  @OneToOne(() => Statistic, (statistic) => statistic.player, { cascade: true })
   @JoinColumn()
-  statistics: Statistic | null;
+  statistics?: Statistic | null;
 }

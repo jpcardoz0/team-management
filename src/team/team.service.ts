@@ -7,13 +7,16 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 
 import { Team } from 'src/entities/team.entity';
+import { User } from 'src/entities/user.entity';
 import { CreateTeamDto } from './dto/CreateTeam.dto';
 import { UpdateTeamDto } from './dto/UpdateTeam.dto';
 import { validateDate } from 'src/utils/dateFunctions';
+import { Role } from 'src/enums/role.enum';
 
 @Injectable()
 export class TeamService {
   constructor(
+    @InjectRepository(User) private userRepository: Repository<User>,
     @InjectRepository(Team) private teamRepository: Repository<Team>,
   ) {}
 
@@ -22,7 +25,7 @@ export class TeamService {
     return teams;
   }
 
-  async getTeamById(teamId: number): Promise<Team> {
+  async getTeamPlayers(teamId: number): Promise<Team> {
     const team = await this.teamRepository.findOne({
       where: { id: teamId },
       relations: ['players'],
@@ -50,6 +53,26 @@ export class TeamService {
       throw new BadRequestException(
         'A data informada é inválida. Formato correto: YYYY-MM-DD',
       );
+    }
+
+    if (dto.managerId) {
+      const manager = await this.userRepository.findOneBy({
+        id: dto.managerId,
+      });
+
+      if (!manager) {
+        throw new NotFoundException(
+          `Usuário com id ${dto.managerId} não foi encontrado.`,
+        );
+      }
+
+      if (manager.role !== Role.MANAGER) {
+        throw new BadRequestException(
+          `Usuário com id ${dto.managerId} não é um manager.`,
+        );
+      }
+
+      newTeam.manager = manager;
     }
 
     await this.teamRepository.save(newTeam);
@@ -87,6 +110,26 @@ export class TeamService {
 
     if (!team) {
       throw new NotFoundException(`Time com id ${teamId} não foi encontrado.`);
+    }
+
+    if (dto.managerId) {
+      const manager = await this.userRepository.findOneBy({
+        id: dto.managerId,
+      });
+
+      if (!manager) {
+        throw new NotFoundException(
+          `Usuário com id ${dto.managerId} não foi encontrado.`,
+        );
+      }
+
+      if (manager.role !== Role.MANAGER) {
+        throw new BadRequestException(
+          `Usuário com id ${dto.managerId} não é um manager.`,
+        );
+      }
+
+      team.manager = manager;
     }
 
     Object.assign(team, dto);

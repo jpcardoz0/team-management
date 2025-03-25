@@ -1,4 +1,4 @@
-import { IsInt, IsNotEmpty, IsOptional, IsString } from 'class-validator';
+import { IsInt, IsNotEmpty, IsOptional, IsString, Min } from 'class-validator';
 
 export class CreatePlayerDto {
   @IsNotEmpty({ message: 'O nome do jogador deve ser informado.' })
@@ -21,5 +21,6 @@ export class CreatePlayerDto {
 
   @IsOptional()
   @IsInt()
+  @Min(1)
   teamId: number;
 }

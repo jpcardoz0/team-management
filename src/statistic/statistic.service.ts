@@ -2,24 +2,28 @@ import {
   BadRequestException,
   Injectable,
   NotFoundException,
+  UnauthorizedException,
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 
 import { Statistic } from 'src/entities/statistic.entity';
+import { Player } from 'src/entities/player.entity';
+import { Team } from 'src/entities/team.entity';
 import { CreateStatisticDto } from './dto/CreateStatistic.dto';
 import { UpdateStatsDto } from './dto/UpdateStats.dto';
-import { Player } from 'src/entities/player.entity';
+import { Request } from 'express';
 
 @Injectable()
 export class StatisticService {
   constructor(
     @InjectRepository(Statistic) private statsRepository: Repository<Statistic>,
-    @InjectRepository(Player) private PlayerRepository: Repository<Player>,
+    @InjectRepository(Player) private playerRepository: Repository<Player>,
+    @InjectRepository(Team) private teamRepository: Repository<Team>,
   ) {}
 
-  async createStats(dto: CreateStatisticDto): Promise<Statistic> {
-    const statsPlayer = await this.PlayerRepository.findOneBy({
+  async createStats(req: Request, dto: CreateStatisticDto): Promise<Statistic> {
+    const statsPlayer = await this.playerRepository.findOneBy({
       id: dto.playerId,
     });
 
@@ -39,6 +43,20 @@ export class StatisticService {
       );
     }
 
+    const team = await this.teamRepository.findOne({
+      where: { players: statsPlayer },
+      relations: ['manager'],
+    });
+
+    if (team && team.manager) {
+      const user = JSON.stringify(req.user);
+      const jsonData = JSON.parse(user);
+
+      if (jsonData.id !== team.manager.id) {
+        throw new UnauthorizedException();
+      }
+    }
+
     const newStats = this.statsRepository.create({
       ...dto,
       player: statsPlayer,
@@ -48,7 +66,11 @@ export class StatisticService {
     return newStats;
   }
 
-  async updateStats(statsId: number, dto: UpdateStatsDto): Promise<Statistic> {
+  async updateStats(
+    req: Request,
+    statsId: number,
+    dto: UpdateStatsDto,
+  ): Promise<Statistic> {
     if (dto === undefined) {
       throw new BadRequestException('Um JSON deve ser inserido.');
     }
@@ -61,11 +83,11 @@ export class StatisticService {
       throw new NotFoundException('Essas estatísticas não existem.');
     }
 
-    if (dto.playerId) {
-      const newPlayer = await this.PlayerRepository.findOneBy({
-        id: dto.playerId,
-      });
+    const newPlayer = await this.playerRepository.findOneBy({
+      id: dto.playerId,
+    });
 
+    if (dto.playerId) {
       if (!newPlayer) {
         throw new NotFoundException(
           `Jogador com id ${dto.playerId} não encontrado.`,
@@ -73,6 +95,20 @@ export class StatisticService {
       }
 
       stats.player = newPlayer;
+    }
+
+    const team = await this.teamRepository.findOne({
+      where: { players: stats.player },
+      relations: ['manager'],
+    });
+
+    if (team && team.manager) {
+      const user = JSON.stringify(req.user);
+      const jsonData = JSON.parse(user);
+
+      if (jsonData.id !== team.manager.id) {
+        throw new UnauthorizedException();
+      }
     }
 
     Object.assign(stats, dto);

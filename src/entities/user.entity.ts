@@ -1,11 +1,15 @@
-import { Role } from 'src/enums/role.enum';
 import {
   Column,
   CreateDateColumn,
   Entity,
+  JoinColumn,
+  OneToOne,
   PrimaryGeneratedColumn,
   Unique,
 } from 'typeorm';
+
+import { Role } from 'src/enums/role.enum';
+import { Team } from './team.entity';
 
 @Unique(['username'])
 @Entity()
@@ -24,4 +28,8 @@ export class User {
 
   @CreateDateColumn()
   createdAt: Date;
+
+  @OneToOne(() => Team, (team) => team.manager, { cascade: true })
+  @JoinColumn()
+  team?: Team;
 }

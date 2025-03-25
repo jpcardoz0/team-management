@@ -8,7 +8,9 @@ import {
   ParseIntPipe,
   Param,
   UseGuards,
+  Req,
 } from '@nestjs/common';
+import { Request } from 'express';
 
 import { StatisticService } from './statistic.service';
 import { CreateStatisticDto } from './dto/CreateStatistic.dto';
@@ -21,22 +23,23 @@ import { Role } from 'src/enums/role.enum';
 @Roles(Role.ADMIN, Role.MANAGER)
 @UseGuards(RolesGuard)
 @UseGuards(JwtAuthGuard)
-@Controller('stats')
+@Controller('statistic')
 export class StatisticController {
   constructor(private readonly statsService: StatisticService) {}
 
   @Post()
   @UsePipes(new ValidationPipe())
-  createStats(@Body() dto: CreateStatisticDto) {
-    return this.statsService.createStats(dto);
+  createStats(@Req() req: Request, @Body() dto: CreateStatisticDto) {
+    return this.statsService.createStats(req, dto);
   }
 
   @Put(':statsId')
   @UsePipes(new ValidationPipe())
   updateStats(
+    @Req() req: Request,
     @Param('statsId', ParseIntPipe) statsId: number,
     @Body() dto: UpdateStatsDto,
   ) {
-    return this.statsService.updateStats(statsId, dto);
+    return this.statsService.updateStats(req, statsId, dto);
   }
 }

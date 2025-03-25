@@ -2,12 +2,14 @@ import {
   Column,
   Entity,
   OneToMany,
+  OneToOne,
   PrimaryGeneratedColumn,
   Unique,
 } from 'typeorm';
 
 import { getTodayDate } from 'src/utils/dateFunctions';
 import { Player } from './player.entity';
+import { User } from './user.entity';
 
 @Entity()
 @Unique(['name'])
@@ -19,7 +21,7 @@ export class Team {
   name: string;
 
   @Column({ nullable: true })
-  stadium: string;
+  stadium?: string;
 
   @Column()
   location: string;
@@ -28,5 +30,8 @@ export class Team {
   foundationDate: string;
 
   @OneToMany(() => Player, (player) => player.team, { cascade: true })
-  players: Player[];
+  players?: Player[];
+
+  @OneToOne(() => User, (manager) => manager.team)
+  manager?: User;
 }
