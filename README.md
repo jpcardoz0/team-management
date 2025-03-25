@@ -21,7 +21,7 @@ API para gerenciamento de times e jogadores
 ADMIN: acessam todos os endpoints.
 
 MANAGER: permissões de user + criar, atualizar e deletar jogadores e estatísticas vinculados ao seu time
-(cada manager pode ser vinculado a apenas um.
+(cada manager pode ser vinculado a apenas um time)
 
-USER: podem apenas ler as informações dos times, jogadores e estatísticas,
+USER: podem apenas ler as informações de times, jogadores e estatísticas,
 além disso, podem ver, atualizar e deletar seu perfil.
