@@ -1,5 +1,5 @@
 # team-management
-API para gerenciamento de times e jogadores
+API para gerenciamento de times e jogadores\n
 *(entre na branch master para ver o projeto completo)*
 
 # Funcionamento da API
