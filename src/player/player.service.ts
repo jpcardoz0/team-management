@@ -76,8 +76,8 @@ export class PlayerService {
       }
 
       if (playerTeam.manager) {
-        const user = JSON.stringify(req.user);
-        const jsonData = JSON.parse(user);
+        const data = JSON.stringify(req.user);
+        const jsonData = JSON.parse(data);
 
         if (jsonData.id !== playerTeam.manager.id) {
           throw new UnauthorizedException();
@@ -146,8 +146,8 @@ export class PlayerService {
       }
 
       if (newTeam.manager) {
-        const user = JSON.stringify(req.user);
-        const jsonData = JSON.parse(user);
+        const data = JSON.stringify(req.user);
+        const jsonData = JSON.parse(data);
 
         if (jsonData.id !== newTeam.manager.id) {
           throw new UnauthorizedException();
@@ -178,8 +178,8 @@ export class PlayerService {
     });
 
     if (team && team.manager) {
-      const user = JSON.stringify(req.user);
-      const jsonData = JSON.parse(user);
+      const data = JSON.stringify(req.user);
+      const jsonData = JSON.parse(data);
 
       if (jsonData.id !== team.manager.id) {
         throw new UnauthorizedException();
@@ -223,8 +223,8 @@ export class PlayerService {
     });
 
     if (team && team.manager) {
-      const user = JSON.stringify(req.user);
-      const jsonData = JSON.parse(user);
+      const data = JSON.stringify(req.user);
+      const jsonData = JSON.parse(data);
 
       if (jsonData.id !== team.manager.id) {
         throw new UnauthorizedException();

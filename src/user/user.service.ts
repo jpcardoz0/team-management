@@ -2,14 +2,17 @@ import {
   BadRequestException,
   Injectable,
   NotFoundException,
+  UnauthorizedException,
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
+import { Request } from 'express';
 
 import { User } from 'src/entities/user.entity';
 import { CreateUserDto } from './dto/CreateUser.dto';
 import { UpdateUserDto } from './dto/UpdateUser.dto';
 import { encodePassword } from 'src/utils/bcrypt';
+import { Role } from 'src/enums/role.enum';
 
 @Injectable()
 export class UserService {
@@ -22,7 +25,7 @@ export class UserService {
     return users;
   }
 
-  async getUserById(userId: number): Promise<User> {
+  async getUserById(req: Request, userId: number): Promise<User> {
     const user = await this.userRepository.findOne({
       where: { id: userId },
       relations: ['team'],
@@ -32,6 +35,15 @@ export class UserService {
       throw new NotFoundException(
         `Usuário com id ${userId} não foi encontrado.`,
       );
+    }
+
+    const data = JSON.stringify(req.user);
+    const jsonData = JSON.parse(data);
+
+    if (jsonData.role === Role.MANAGER || jsonData.role === Role.USER) {
+      if (user.id !== jsonData.id) {
+        throw new UnauthorizedException();
+      }
     }
 
     return user;
@@ -59,7 +71,11 @@ export class UserService {
     return newUser;
   }
 
-  async updateUser(userId: number, dto: UpdateUserDto): Promise<User> {
+  async updateUser(
+    req: Request,
+    userId: number,
+    dto: UpdateUserDto,
+  ): Promise<User> {
     if (dto === undefined) {
       throw new BadRequestException('Um JSON deve ser inserido.');
     }
@@ -99,16 +115,34 @@ export class UserService {
       );
     }
 
+    const data = JSON.stringify(req.user);
+    const jsonData = JSON.parse(data);
+
+    if (jsonData.role === Role.MANAGER || jsonData.role === Role.USER) {
+      if (user.id !== jsonData.id) {
+        throw new UnauthorizedException();
+      }
+    }
+
     return user;
   }
 
-  async deleteUser(userId: number) {
+  async deleteUser(req: Request, userId: number) {
     const user = await this.userRepository.findOneBy({ id: userId });
 
     if (!user) {
       throw new NotFoundException(
         `Usuário com id ${userId} não foi encontrado.`,
       );
+    }
+
+    const data = JSON.stringify(req.user);
+    const jsonData = JSON.parse(data);
+
+    if (jsonData.role === Role.MANAGER || jsonData.role === Role.USER) {
+      if (user.id !== jsonData.id) {
+        throw new UnauthorizedException();
+      }
     }
 
     await this.userRepository.delete(userId);
