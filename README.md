@@ -1,12 +1,20 @@
 # team-management
 API para gerenciamento de times e jogadores
+*(entre na branch master para ver o projeto completo)*
 
-Funcionalidades da API
+# Funcionamento da API
+1- Registrar usuário
+2- Logar usuário
+3- CRUD usuarios (admin)
+4- CRUD times
+5- CRUD jogadores
+6- CRUD estatísticas
 
-✅ Criar, listar, atualizar e excluir times
+# ROLES UPDATE:
 
-✅ Criar, listar, atualizar e excluir jogadores vinculados a um time
+ADMIN: acessam todos os endpoints.
 
-✅ Buscar jogadores por time
+MANAGER: permissões de user + criar, atualizar e deletar jogadores e estatísticas vinculados ao seu time (cada manager pode ser vinculado a apenas um;
 
-✅ Buscar estatísticas de jogadores (gols, assistências, partidas jogadas)
+USER: podem apenas ler as informações dos times, jogadores e estatísticas,
+além disso, podem ver, atualizar e deletar seu perfil.
